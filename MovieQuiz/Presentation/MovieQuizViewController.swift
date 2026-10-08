@@ -45,11 +45,11 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        isCorrectAnswer(answer: true)
+        showResultByAnswer(isCorrectAnswer: true)
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        isCorrectAnswer(answer: false)
+        showResultByAnswer(isCorrectAnswer: false)
     }
 
     // MARK: - Lifecycle
@@ -115,9 +115,9 @@ final class MovieQuizViewController: UIViewController {
         show(quiz: viewModel)
     }
     
-    private func isCorrectAnswer(answer: Bool) {
+    private func showResultByAnswer(isCorrectAnswer: Bool) {
         let currentQuestion = questions[currentQuestionIndex]
-        showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
+        showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
     private func showNextQuestionOrResults() {
