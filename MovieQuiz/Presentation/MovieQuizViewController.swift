@@ -45,11 +45,11 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        showResultByAnswer(answer: true)
+        isCorrectAnswer(answer: true)
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        showResultByAnswer(answer: false)
+        isCorrectAnswer(answer: false)
     }
 
     // MARK: - Lifecycle
@@ -70,7 +70,6 @@ final class MovieQuizViewController: UIViewController {
     
     private func show(quiz step: QuizStepViewModel) {
         imageView.layer.borderWidth = 0
-        imageView.layer.cornerRadius = 20
         imageView.layer.borderColor = nil
         textLabel.text = step.question
         imageView.image = step.image
@@ -98,9 +97,7 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        imageView.layer.masksToBounds = true // даём разрешение на рисование рамки
         imageView.layer.borderWidth = 8 // толщина рамки
-        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
         if isCorrect {
@@ -118,7 +115,7 @@ final class MovieQuizViewController: UIViewController {
         show(quiz: viewModel)
     }
     
-    private func showResultByAnswer(answer: Bool) {
+    private func isCorrectAnswer(answer: Bool) {
         let currentQuestion = questions[currentQuestionIndex]
         showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer)
     }
