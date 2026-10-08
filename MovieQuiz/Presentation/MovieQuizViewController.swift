@@ -8,8 +8,20 @@ struct QuizQuestion {
     let correctAnswer: Bool
 }
 
+// MARK: - ViewModel
+struct QuizStepViewModel {
+    let image: UIImage
+    let question: String
+    let questionNumber: String
+}
+
+struct QuizResultsViewModel {
+    let title: String
+    let text: String
+    let buttonText: String
+}
+
 final class MovieQuizViewController: UIViewController {
-    
     // MARK: - Properties
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
@@ -38,19 +50,6 @@ final class MovieQuizViewController: UIViewController {
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         showResultByAnswer(answer: false)
-    }
-    
-    // MARK: - ViewModel
-    struct QuizStepViewModel {
-        let image: UIImage
-        let question: String
-        let questionNumber: String
-    }
-    
-    struct QuizResultsViewModel {
-        let title: String
-        let text: String
-        let buttonText: String
     }
 
     // MARK: - Lifecycle
