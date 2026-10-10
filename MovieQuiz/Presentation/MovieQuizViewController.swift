@@ -25,6 +25,12 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Properties
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
+    private let imageViewBorderWidth: CGFloat = 8
+    
+    private let yourResult = "Ваш результат: "
+    private let roundOver = "Этот раунд окончен!"
+    private let playAgain = "Сыграть еще раз"
+    
     private let questions: [QuizQuestion] = [
         QuizQuestion(image: "The Godfather", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
         QuizQuestion(image: "The Dark Knight", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
@@ -41,7 +47,7 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
-    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet private weak var imageView: UIImageView!
     
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
@@ -97,7 +103,7 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        imageView.layer.borderWidth = 8 // толщина рамки
+        imageView.layer.borderWidth = imageViewBorderWidth
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
         if isCorrect {
@@ -122,11 +128,11 @@ final class MovieQuizViewController: UIViewController {
 
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questions.count - 1 {
-            let result = "Ваш результат: \(correctAnswers)/\(questions.count)"
+            let result = "\(yourResult) \(correctAnswers)/\(questions.count)"
             let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
+                title: roundOver,
                 text: result,
-                buttonText: "Сыграть еще раз"
+                buttonText: playAgain
             )
             showAlert(quiz: viewModel)
         } else {
