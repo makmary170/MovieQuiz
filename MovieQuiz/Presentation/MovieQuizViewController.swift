@@ -95,13 +95,15 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showCurrentAnswer() {
-        guard let currentQuestion else {return }
-        let viewModel = convert(model: currentQuestion)
-        show(quiz: viewModel)
+        if let firstQuestion = questionFactory.requestNextQuestion() {
+            currentQuestion = firstQuestion
+            let viewModel = convert(model: firstQuestion)
+            show(quiz: viewModel)
+        }
     }
     
     private func showResultByAnswer(isCorrectAnswer: Bool) {
-        guard let currentQuestion = currentQuestion else { return }
+        guard let currentQuestion else { return }
         showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
