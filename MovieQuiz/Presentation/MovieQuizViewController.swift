@@ -2,35 +2,25 @@ import UIKit
 
 
 final class MovieQuizViewController: UIViewController {
-    // MARK: - Properties
-    private var currentQuestionIndex = 0
-    private var correctAnswers = 0
-    private let imageViewBorderWidth: CGFloat = 8
-    
-    
-    private let yourResult = "Ваш результат: "
-    private let roundOver = "Этот раунд окончен!"
-    private let playAgain = "Сыграть еще раз"
-    
-    private let questions: [QuizQuestion] = [
-        QuizQuestion(image: "The Godfather", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "The Dark Knight", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "Kill Bill", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "The Avengers", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "Deadpool", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "The Green Knight", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: true),
-        QuizQuestion(image: "Old", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: false),
-        QuizQuestion(image: "The Ice Age Adventures of Buck Wild", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: false),
-        QuizQuestion(image: "Tesla", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: false),
-        QuizQuestion(image: "Vivarium", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: false)
-    ]
-
     // MARK: - IBOutlets
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var noButton: UIButton!
     @IBOutlet private weak var yesButton: UIButton!
+    
+    // MARK: - Properties
+    private var currentQuestionIndex = 0
+    private var correctAnswers = 0
+    private var questionFactory: QuestionFactory = QuestionFactory()
+    private var currentQuestion: QuizQuestion?
+    
+    private let imageViewBorderWidth: CGFloat = 8
+    private let questionsAmount = 10
+    
+    private let yourResult = "Ваш результат: "
+    private let roundOver = "Этот раунд окончен!"
+    private let playAgain = "Сыграть еще раз"
     
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
@@ -54,7 +44,7 @@ final class MovieQuizViewController: UIViewController {
         let questionStep = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)"
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
         )
         return questionStep
     }
@@ -78,9 +68,11 @@ final class MovieQuizViewController: UIViewController {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            let firstQuestion = self.questions[self.currentQuestionIndex]
-            let viewModel = self.convert(model: firstQuestion)
-            self.show(quiz: viewModel)
+            if let firstQuestion = self.questionFactory.requestNextQuestion() {
+                self.currentQuestion = firstQuestion
+                let viewModel = self.convert(model: firstQuestion)
+                self.show(quiz: viewModel)
+            }
         }
         
         alert.addAction(action)
@@ -103,19 +95,19 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showCurrentAnswer() {
-        let question = questions[currentQuestionIndex]
-        let viewModel = convert(model: question)
+        guard let currentQuestion else {return }
+        let viewModel = convert(model: currentQuestion)
         show(quiz: viewModel)
     }
     
     private func showResultByAnswer(isCorrectAnswer: Bool) {
-        let currentQuestion = questions[currentQuestionIndex]
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questions.count - 1 {
-            let result = "\(yourResult) \(correctAnswers)/\(questions.count)"
+        if currentQuestionIndex == questionsAmount - 1 {
+            let result = "\(yourResult) \(correctAnswers)/\(questionsAmount)"
             let viewModel = QuizResultsViewModel(
                 title: roundOver,
                 text: result,
