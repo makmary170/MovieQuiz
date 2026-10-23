@@ -1,7 +1,7 @@
 import UIKit
 
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
     
     // MARK: - IBOutlets
     @IBOutlet private weak var textLabel: UILabel!
@@ -14,6 +14,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
+    private var alertPresenter: AlertPresenterProtocol?
     private var currentQuestion: QuizQuestion?
     
     // MARK: - Constants
@@ -77,23 +78,33 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
     }
     
-    private func showAlert(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+    func showAlert(quiz result: QuizResultsViewModel) {
+        let model = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText) { [weak self]  in
             guard let self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             self.questionFactory?.requestNextQuestion()
         }
-        
-        alert.addAction(action)
-        
-        self.present(alert, animated: true, completion: nil)
+            self.alertPresenter?.showAlert(ui: self, model: model)
     }
+    
+//    private func showAlert(quiz result: QuizResultsViewModel) {
+//        let alert = UIAlertController(
+//            title: result.title,
+//            message: result.text,
+//            preferredStyle: .alert)
+//        
+//        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+//            guard let self else { return }
+//            self.currentQuestionIndex = 0
+//            self.correctAnswers = 0
+//            self.questionFactory?.requestNextQuestion()
+//        }
+//        
+//        alert.addAction(action)
+//        
+//        self.present(alert, animated: true, completion: nil)
+//    }
     
     private func showAnswerResult(isCorrect: Bool) {
         imageView.layer.borderWidth = imageViewBorderWidth
