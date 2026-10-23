@@ -8,5 +8,5 @@
 import Foundation
 
 protocol AlertPresenterDelegate: AnyObject {
-    func showAlert(quiz result: QuizResultsViewModel)
+    func didAlert(quiz result: QuizResultsViewModel)
 }
