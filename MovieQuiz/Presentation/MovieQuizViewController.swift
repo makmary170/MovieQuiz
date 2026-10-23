@@ -16,6 +16,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
+    // MARK: - Constants
     private let imageViewBorderWidth: CGFloat = 8
     private let questionsAmount = 10
     
@@ -37,10 +38,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        questionFactory?.requestNextQuestion()
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
+        self.questionFactory?.requestNextQuestion()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -50,6 +51,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
 
         currentQuestion = question
+        
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self]  in
             self?.show(quiz: viewModel)
@@ -72,7 +74,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         textLabel.text = step.question
         imageView.image = step.image
         counterLabel.text = step.questionNumber
-        questionFactory?.requestNextQuestion()
+        
     }
     
     private func showAlert(quiz result: QuizResultsViewModel) {
@@ -85,6 +87,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
         }
         
         alert.addAction(action)
@@ -122,7 +125,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             showAlert(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
-            questionFactory?.requestNextQuestion()
+            self.questionFactory?.requestNextQuestion()
             noButton.isEnabled = true
             yesButton.isEnabled = true
         }
