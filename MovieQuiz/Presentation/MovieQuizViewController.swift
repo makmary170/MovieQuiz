@@ -1,7 +1,8 @@
 import UIKit
 
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+    
     
     // MARK: - IBOutlets
     @IBOutlet private weak var textLabel: UILabel!
@@ -20,10 +21,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // MARK: - Constants
     private let imageViewBorderWidth: CGFloat = 8
     private let questionsAmount = 10
-    
-    private let yourResult = "Ваш результат: "
-    private let roundOver = "Этот раунд окончен!"
-    private let playAgain = "Сыграть еще раз"
+    private let yourResultText = "Ваш результат: "
+    private let roundOverText = "Этот раунд окончен!"
+    private let playAgainText = "Сыграть еще раз"
     
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
@@ -43,6 +43,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         questionFactory.delegate = self
         self.questionFactory = questionFactory
         self.questionFactory?.requestNextQuestion()
+        
+        let presenter = AlertPresenter()
+        presenter.delegate = self
+        self.alertPresenter = presenter
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -58,36 +62,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             self?.show(quiz: viewModel)
         }
     }
-    
-    // MARK: - AlertPresenterDelegate
-    func didAlert(quiz result: QuizResultsViewModel) {
-        let model = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText) { [weak self]  in
-            guard let self else { return }
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            self.questionFactory?.requestNextQuestion()
-        }
-            self.alertPresenter?.showAlert(ui: self, model: model)
-    }
-    
-    //    private func showAlert(quiz result: QuizResultsViewModel) {
-    //        let alert = UIAlertController(
-    //            title: result.title,
-    //            message: result.text,
-    //            preferredStyle: .alert)
-    //
-    //        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-    //            guard let self else { return }
-    //            self.currentQuestionIndex = 0
-    //            self.correctAnswers = 0
-    //            self.questionFactory?.requestNextQuestion()
-    //        }
-    //
-    //        alert.addAction(action)
-    //
-    //        self.present(alert, animated: true, completion: nil)
-    //    }
-    
 
     // MARK: - Private methods
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -105,7 +79,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         textLabel.text = step.question
         imageView.image = step.image
         counterLabel.text = step.questionNumber
-        
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -129,14 +102,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
 
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let result = "\(yourResult) \(correctAnswers)/\(questionsAmount)"
-            let viewModel = QuizResultsViewModel(
-                title: roundOver,
-                text: result,
-                buttonText: playAgain
-            )
-            self.didAlert(quiz: viewModel)
-//            showAlert(quiz: viewModel)
+            let result = "\(yourResultText) \(correctAnswers)/\(questionsAmount)"
+            let alertModel = AlertModel(title: roundOverText, message: result, buttonText: playAgainText) { [weak self]  in
+                guard let self else { return }
+                self.currentQuestionIndex = 0
+                self.correctAnswers = 0
+                self.questionFactory?.requestNextQuestion()
+            }
+            self.alertPresenter?.showAlert(model: alertModel)
         } else {
             currentQuestionIndex += 1
             self.questionFactory?.requestNextQuestion()

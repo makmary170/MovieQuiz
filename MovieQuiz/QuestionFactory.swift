@@ -4,7 +4,6 @@
 //
 //  Created by Мария Макарова on 19.10.2026.
 //
-
 import Foundation
 
 class QuestionFactory: QuestionFactoryProtocol {
