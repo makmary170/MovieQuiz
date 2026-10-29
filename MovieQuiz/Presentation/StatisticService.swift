@@ -13,6 +13,7 @@ final class StatisticService: StatisticServiceProtocol {
     // MARK: - Private Constants
 
     private let storage: UserDefaults = .standard
+    private var totalCorrectAnswers: Int = 0 // общее количество правильных ответов за все игры
 
     // MARK: - Enums
 
@@ -53,24 +54,11 @@ final class StatisticService: StatisticServiceProtocol {
     }
 
     var totalAccuracy: Double {
-        guard totalQuestionsAsked != 0 else { return 0.0 }
-        storage.double(forKey: Keys.totalAccuracy.rawValue)
-        return Double(totalCorrectAnswers) / Double(totalQuestionsAsked) * 100
+        guard currentTotalQuestions != 0 else { return 0.0 }
+        return Double(currentTotalCount) / Double(currentTotalQuestions) * 100
         }
 
-    var currentTotalCount: Int {
-
-        get {
-            storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
-        }
-
-        set {
-            storage.set(newValue, forKey: Keys.totalCorrectAnswers.rawValue)
-        }
-
-    }
-
-    private var totalCorrectAnswers: Int {
+    private var currentTotalCount: Int {
         get {
             storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
         }
@@ -80,18 +68,7 @@ final class StatisticService: StatisticServiceProtocol {
         }
     }
 
-    private var totalQuestionsAsked: Int {
-        get {
-            storage.integer(forKey: Keys.totalQuestionsAsked.rawValue)
-        }
-
-        set {
-            storage.set(newValue, forKey: Keys.totalQuestionsAsked.rawValue)
-        }
-    }
-
-    var currentTotalQuestions: Int {
-
+    private var currentTotalQuestions: Int {
         get {
             storage.integer(forKey: Keys.totalQuestionsAsked.rawValue)
         }
