@@ -13,7 +13,6 @@ final class StatisticService: StatisticServiceProtocol {
     // MARK: - Private Constants
 
     private let storage: UserDefaults = .standard
-    private var totalCorrectAnswers: Int = 0 // общее количество правильных ответов за все игры
 
     // MARK: - Enums
 
