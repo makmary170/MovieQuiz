@@ -16,15 +16,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
+    private var statisticService: StatisticServiceProtocol?
     private var currentQuestion: QuizQuestion?
-    
+
     // MARK: - Constants
     private let imageViewBorderWidth: CGFloat = 8
     private let questionsAmount = 10
     private let yourResultText = "Ваш результат: "
     private let roundOverText = "Этот раунд окончен!"
     private let playAgainText = "Сыграть еще раз"
-    
+    private let gamesCountText = "Количество сыгранных квизов: " // gamesCount
+    private let bestGameText = "Рекорд: " // bestGame
+    private let totalAccuracyText = "Средняя точность: " // totalAccuracy
+
+
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         yesButton.isEnabled = false
@@ -47,8 +52,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let presenter = AlertPresenter()
         presenter.delegate = self
         self.alertPresenter = presenter
+
+        let statistic = StatisticService()
+        statistic.delegate = self
+        self.statisticService = statistic
     }
-    
+
     // MARK: - QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
@@ -100,10 +109,29 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
+    private func formatStat(gamesCount: Int?, bestGame: GameResult?, totalAccuracy: Double?) -> String {
+        guard let gamesCount, let bestGame, let totalAccuracy else { return "" }
+        let formattedDateString = bestGame.date.dateTimeString
+        let formattedTotalAccuracyString = "\(String(format: "%.2f", totalAccuracy))%"
+        let currentResult = "\(yourResultText) \(correctAnswers)/\(questionsAmount)"
+
+        let totalQuizAmountFormatted = "\(gamesCountText)\(gamesCount)"
+        let recordFormatted = "\(bestGameText)\(bestGame.correct)/\(bestGame.total) \(formattedDateString)"
+        let totalAccuracyFormatted = "\(totalAccuracyText)\(formattedTotalAccuracyString)"
+
+        let totalFormattedMessage = "\(currentResult)\n\(totalQuizAmountFormatted)\n\(recordFormatted)\n\(totalAccuracyFormatted)"
+        return totalFormattedMessage
+    }
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let result = "\(yourResultText) \(correctAnswers)/\(questionsAmount)"
-            let alertModel = AlertModel(title: roundOverText, message: result, buttonText: playAgainText) { [weak self]  in
+            self.statisticService?.store(correct: correctAnswers, total: 10)
+
+            let gamesCount = self.statisticService?.gamesCount
+            let bestGame = self.statisticService?.bestGame
+            let totalAccuracy = self.statisticService?.totalAccuracy
+
+            let alertMessage = formatStat(gamesCount: gamesCount, bestGame: bestGame, totalAccuracy: totalAccuracy)
+            let alertModel = AlertModel(title: roundOverText, message: alertMessage, buttonText: playAgainText) { [weak self]  in
                 guard let self else { return }
                 self.currentQuestionIndex = 0
                 self.correctAnswers = 0
