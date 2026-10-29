@@ -53,9 +53,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         presenter.delegate = self
         self.alertPresenter = presenter
 
-        let statistic = StatisticService()
-        statistic.delegate = self
-        self.statisticService = statistic
+        statisticService = StatisticService()
     }
 
     // MARK: - QuestionFactoryDelegate
@@ -109,29 +107,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
-    private func formatStat(gamesCount: Int?, bestGame: GameResult?, totalAccuracy: Double?) -> String {
-        guard let gamesCount, let bestGame, let totalAccuracy else { return "" }
-        let formattedDateString = bestGame.date.dateTimeString
-        let formattedTotalAccuracyString = "\(String(format: "%.2f", totalAccuracy))%"
-        let currentResult = "\(yourResultText) \(correctAnswers)/\(questionsAmount)"
-
-        let totalQuizAmountFormatted = "\(gamesCountText)\(gamesCount)"
-        let recordFormatted = "\(bestGameText)\(bestGame.correct)/\(bestGame.total) (\(formattedDateString))"
-        let totalAccuracyFormatted = "\(totalAccuracyText)\(formattedTotalAccuracyString)"
-
-        let totalFormattedMessage = "\(currentResult)\n\(totalQuizAmountFormatted)\n\(recordFormatted)\n\(totalAccuracyFormatted)"
-        return totalFormattedMessage
-    }
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            self.statisticService?.store(correct: correctAnswers, total: 10)
+            guard let statisticService else { return }
+            statisticService.store(correct: correctAnswers, total: 10)
 
-            let gamesCount = self.statisticService?.gamesCount
-            let bestGame = self.statisticService?.bestGame
-            let totalAccuracy = self.statisticService?.totalAccuracy
+            let formattedDateString = statisticService.bestGame.date.dateTimeString
+            let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
 
-            let alertMessage = formatStat(gamesCount: gamesCount, bestGame: bestGame, totalAccuracy: totalAccuracy)
-            let alertModel = AlertModel(title: roundOverText, message: alertMessage, buttonText: playAgainText) { [weak self]  in
+            let messages = [
+                "\(yourResultText) \(correctAnswers)/\(questionsAmount)",
+                "\(gamesCountText)\(statisticService.gamesCount)",
+                "\(bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
+                "\(totalAccuracyText)\(formattedTotalAccuracyString)"
+            ]
+
+            let alertModel = AlertModel(title: roundOverText, message:  messages.joined(separator: "\n"), buttonText: playAgainText) { [weak self]  in
                 guard let self else { return }
                 self.currentQuestionIndex = 0
                 self.correctAnswers = 0
