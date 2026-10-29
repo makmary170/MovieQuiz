@@ -116,7 +116,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let currentResult = "\(yourResultText) \(correctAnswers)/\(questionsAmount)"
 
         let totalQuizAmountFormatted = "\(gamesCountText)\(gamesCount)"
-        let recordFormatted = "\(bestGameText)\(bestGame.correct)/\(bestGame.total) \(formattedDateString)"
+        let recordFormatted = "\(bestGameText)\(bestGame.correct)/\(bestGame.total) (\(formattedDateString))"
         let totalAccuracyFormatted = "\(totalAccuracyText)\(formattedTotalAccuracyString)"
 
         let totalFormattedMessage = "\(currentResult)\n\(totalQuizAmountFormatted)\n\(recordFormatted)\n\(totalAccuracyFormatted)"
