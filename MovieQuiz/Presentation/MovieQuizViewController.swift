@@ -1,8 +1,20 @@
 import UIKit
 
+// MARK: - Constants
+private enum Constants {
+    static let imageViewBorderWidth: CGFloat = 8
+    static let questionsAmount = 10
+    static let answerDisplayDuration: TimeInterval = 1
+
+    static let yourResultText = "Ваш результат: "
+    static let roundOverText = "Этот раунд окончен!"
+    static let playAgainText = "Сыграть еще раз"
+    static let gamesCountText = "Количество сыгранных квизов: "
+    static let bestGameText = "Рекорд: "
+    static let totalAccuracyText = "Средняя точность: "
+}
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
-    
     
     // MARK: - IBOutlets
     @IBOutlet private weak var textLabel: UILabel!
@@ -19,17 +31,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var statisticService: StatisticServiceProtocol?
     private var currentQuestion: QuizQuestion?
 
-    // MARK: - Constants
-    private let imageViewBorderWidth: CGFloat = 8
-    private let questionsAmount = 10
-    private let yourResultText = "Ваш результат: "
-    private let roundOverText = "Этот раунд окончен!"
-    private let playAgainText = "Сыграть еще раз"
-    private let gamesCountText = "Количество сыгранных квизов: " // gamesCount
-    private let bestGameText = "Рекорд: " // bestGame
-    private let totalAccuracyText = "Средняя точность: " // totalAccuracy
-
-
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         yesButton.isEnabled = false
@@ -44,14 +45,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureDependencies()
+        questionFactory?.requestNextQuestion()
+    }
+
+    private func configureDependencies() {
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
-        self.questionFactory?.requestNextQuestion()
-        
-        let presenter = AlertPresenter()
-        presenter.delegate = self
-        self.alertPresenter = presenter
+
+        let alertPresenter = ResultAlertPresenter()
+        alertPresenter.delegate = self
+        self.alertPresenter = alertPresenter
 
         statisticService = StatisticService()
     }
@@ -75,7 +80,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let questionStep = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
+            questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)"
         )
         return questionStep
     }
@@ -89,7 +94,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        imageView.layer.borderWidth = imageViewBorderWidth
+        imageView.layer.borderWidth = Constants.imageViewBorderWidth
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
         if isCorrect {
@@ -108,7 +113,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1 {
+        if currentQuestionIndex == Constants.questionsAmount - 1 {
             guard let statisticService else { return }
             statisticService.store(correct: correctAnswers, total: 10)
 
@@ -116,13 +121,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
 
             let messages = [
-                "\(yourResultText) \(correctAnswers)/\(questionsAmount)",
-                "\(gamesCountText)\(statisticService.gamesCount)",
-                "\(bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
-                "\(totalAccuracyText)\(formattedTotalAccuracyString)"
+                "\(Constants.yourResultText) \(correctAnswers)/\(Constants.questionsAmount)",
+                "\(Constants.gamesCountText)\(statisticService.gamesCount)",
+                "\(Constants.bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
+                "\(Constants.totalAccuracyText)\(formattedTotalAccuracyString)"
             ]
 
-            let alertModel = AlertModel(title: roundOverText, message:  messages.joined(separator: "\n"), buttonText: playAgainText) { [weak self]  in
+            let alertModel = AlertModel(title: Constants.roundOverText, message:  messages.joined(separator: "\n"), buttonText: Constants.playAgainText) { [weak self]  in
                 guard let self else { return }
                 self.currentQuestionIndex = 0
                 self.correctAnswers = 0

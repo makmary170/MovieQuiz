@@ -8,8 +8,15 @@
 import Foundation
 
 struct AlertModel {
-    let title: String  // текст заголовка алерта
-    let message: String  // текст сообщения алерта
-    let buttonText: String  // текст для кнопки алерта
-    let completion: () -> Void  // действие по кнопке алерта
+    /// Текст заголовка алерта
+    let title: String
+
+    /// Текст сообщения алерта
+    let message: String
+
+    /// Текст кнопки алерта
+    let buttonText: String
+
+    /// Действие, выполняемое при нажатии на кнопку
+    let completion: () -> Void
 }
