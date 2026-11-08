@@ -1,6 +1,7 @@
 import UIKit
 
 // MARK: - Constants
+
 private enum Constants {
     static let imageViewBorderWidth: CGFloat = 8
     static let questionsAmount = 10
@@ -17,13 +18,16 @@ private enum Constants {
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - IBOutlets
+
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var noButton: UIButton!
     @IBOutlet private weak var yesButton: UIButton!
-    
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
+
     // MARK: - Properties
+
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
@@ -32,6 +36,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
 
     // MARK: - IBActions
+
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         yesButton.isEnabled = false
         showResultByAnswer(isCorrectAnswer: true)
@@ -43,25 +48,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureDependencies()
         questionFactory?.requestNextQuestion()
     }
 
-    private func configureDependencies() {
-        let questionFactory = QuestionFactory()
-        questionFactory.delegate = self
-        self.questionFactory = questionFactory
-
-        let alertPresenter = ResultAlertPresenter()
-        alertPresenter.delegate = self
-        self.alertPresenter = alertPresenter
-
-        statisticService = StatisticService()
-    }
-
     // MARK: - QuestionFactoryDelegate
+
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -76,6 +71,42 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     // MARK: - Private methods
+
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+    }
+
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+
+        let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self]
+            in
+            guard let self else { return }
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+
+            self.questionFactory?.requestNextQuestion()
+        }
+        self.alertPresenter?.showAlert(model: alertModel)
+    }
+
+    private func configureDependencies() {
+        let questionFactory = QuestionFactory()
+        questionFactory.delegate = self
+        self.questionFactory = questionFactory
+
+        let alertPresenter = ResultAlertPresenter()
+        alertPresenter.delegate = self
+        self.alertPresenter = alertPresenter
+
+        statisticService = StatisticService()
+    }
+
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
