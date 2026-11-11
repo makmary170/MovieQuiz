@@ -31,7 +31,7 @@ struct MoviesLoader: MoviesLoading {
     // MARK: - Error
 
     private enum MessageError: Error {
-        case messageFieldError
+        case apiError(String)
     }
 
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void ) {
@@ -41,8 +41,8 @@ struct MoviesLoader: MoviesLoading {
                 do {
                     let mostPopularMovies = try JSONDecoder().decode(MostPopularMovies.self, from: data)
 
-                    if mostPopularMovies.errorMessage != nil {
-                        handler(.failure(MessageError.messageFieldError))
+                    if let errorMessage = mostPopularMovies.errorMessage {
+                        handler(.failure(MessageError.apiError(errorMessage)))
                     }
 
                     handler(.success(mostPopularMovies))
