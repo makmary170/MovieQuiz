@@ -51,8 +51,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        showLoadingIndicator()
+
         configureDependencies()
-        questionFactory?.requestNextQuestion()
+        questionFactory?.loadData()
     }
 
     // MARK: - QuestionFactoryDelegate
@@ -68,6 +71,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self]  in
             self?.show(quiz: viewModel)
         }
+    }
+
+    func didLoadDataFromServer(){
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
     }
 
     // MARK: - Private methods
@@ -96,7 +108,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func configureDependencies() {
-        let questionFactory = QuestionFactory()
+
+        let moviesLoader = MoviesLoader()
+        let questionFactory = QuestionFactory(delegate: self, moviesLoader: moviesLoader)
         questionFactory.delegate = self
         self.questionFactory = questionFactory
 
@@ -109,7 +123,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)"
         )
