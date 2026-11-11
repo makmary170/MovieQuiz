@@ -20,17 +20,16 @@ class QuestionFactory: QuestionFactoryProtocol {
     func loadData() {
         moviesLoader.loadMovies {
             [weak self] result in
-            guard let self else  { return }
-
-            switch result {
-            case .success(let MostPopularMovies):
-                self.movies = MostPopularMovies.items // сохраняем фильм
-                self.delegate?.didLoadDataFromServer() // данные загрузились
-
-            case .failure(let error):
-                self.delegate?.didFailToLoadData(with: error) // если ошибка
+            DispatchQueue.main.async {
+                guard let self else { return }
+                switch result {
+                case .success(let MostPopularMovies):
+                    self.movies = MostPopularMovies.items // сохраняем фильм
+                    self.delegate?.didLoadDataFromServer() // данные загрузились
+                case .failure(let error):
+                    self.delegate?.didFailToLoadData(with: error) // если ошибка
+                }
             }
-
         }
     }
     
@@ -48,10 +47,9 @@ class QuestionFactory: QuestionFactoryProtocol {
                 print("Failed to load image")
             }
 
-            let rating = Float(movie.rating) ?? 0
             let randomInt = (4...9).randomElement() ?? 7
             let text = "Рейтинг этого фильма больше чем \(randomInt)?"
-            let correctAnswer = rating > Float(randomInt)
+            let correctAnswer = movie.rating > Float(randomInt)
 
             let question = QuizQuestion(
                 image: imageData,
