@@ -10,13 +10,13 @@ import Foundation
 
 struct MostPopularMovies: Codable {
     let items: [MostPopularMovie]
-//    let errorMessage: String
+    let errorMessage: String?
 }
 
 struct MostPopularMovie: Codable {
     let title: String
     let rating: Float
-    let imageURL: URL
+    private let imageURL: URL
 
     var resizedImageURL: URL {
         let urlString = imageURL.absoluteString

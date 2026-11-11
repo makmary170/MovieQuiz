@@ -73,7 +73,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
 
-    func didLoadDataFromServer(){
+    func didLoadDataFromServer() {
         activityIndicator.isHidden = true
         questionFactory?.requestNextQuestion()
     }
@@ -101,8 +101,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-
             self.questionFactory?.requestNextQuestion()
+
+            self.questionFactory?.loadData()
         }
 
         self.alertPresenter?.showAlert(model: alertModel)
@@ -112,7 +113,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
         let moviesLoader = MoviesLoader()
         let questionFactory = QuestionFactory(delegate: self, moviesLoader: moviesLoader)
-        questionFactory.delegate = self
         self.questionFactory = questionFactory
 
         let alertPresenter = ResultAlertPresenter()

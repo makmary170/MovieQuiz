@@ -8,7 +8,7 @@ import Foundation
 
 class QuestionFactory: QuestionFactoryProtocol {
     
-    weak var delegate: QuestionFactoryDelegate?
+    private weak var delegate: QuestionFactoryDelegate?
     private let moviesLoader: MoviesLoading
     private var movies: [MostPopularMovie] = []
 
@@ -47,7 +47,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                 print("Failed to load image")
             }
 
-            let randomInt = (4...9).randomElement() ?? 7
+            let randomInt = Int.random(in: (7...9))
             let text = "Рейтинг этого фильма больше чем \(randomInt)?"
             let correctAnswer = movie.rating > Float(randomInt)
 
