@@ -83,7 +83,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showNetworkError(message: error.localizedDescription)
     }
 
-    func didFailToLadImage(with error: Error) {
+    func didFailToLoadImage(with error: Error) {
         showImageError(message: error.localizedDescription)
     }
 
@@ -111,7 +111,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func showNetworkError(message: String) {
-        showLoadingIndicator()
+        hideLoadingIndicator()
 
         let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
