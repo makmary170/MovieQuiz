@@ -43,6 +43,7 @@ struct MoviesLoader: MoviesLoading {
 
                     if let errorMessage = mostPopularMovies.errorMessage {
                         handler(.failure(MessageError.apiError(errorMessage)))
+                        return
                     }
 
                     handler(.success(mostPopularMovies))

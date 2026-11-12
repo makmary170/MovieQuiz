@@ -44,7 +44,7 @@ class QuestionFactory: QuestionFactoryProtocol {
             do {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
-                print("Failed to load image")
+                self.delegate?.didFailToLadImage(with: error)
             }
 
             let randomInt = Int.random(in: (7...9))

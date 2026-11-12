@@ -13,6 +13,7 @@ private enum Constants {
     static let gamesCountText = "Количество сыгранных квизов: "
     static let bestGameText = "Рекорд: "
     static let totalAccuracyText = "Средняя точность: "
+    static let tryAgainText = "Попробовать еще раз"
 }
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
@@ -74,12 +75,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
+        activityIndicator.isHidden = false
         questionFactory?.requestNextQuestion()
     }
 
     func didFailToLoadData(with error: Error) {
         showNetworkError(message: error.localizedDescription)
+    }
+
+    func didFailToLadImage(with error: Error) {
+        showImageError(message: error.localizedDescription)
     }
 
     // MARK: - Private methods
@@ -93,10 +98,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         activityIndicator.isHidden = true
     }
 
-    private func showNetworkError(message: String) {
-        hideLoadingIndicator()
+    private func showImageError(message: String) {
+        showLoadingIndicator()
 
-        let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self]
+        let alertModel = AlertModel(title: "Ошибка загрузки изображения", message: message, buttonText: Constants.tryAgainText) { [weak self]
+            in
+            guard let self else { return }
+            self.questionFactory?.requestNextQuestion()
+        }
+
+        self.alertPresenter?.showAlert(model: alertModel)
+    }
+
+    private func showNetworkError(message: String) {
+        showLoadingIndicator()
+
+        let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
             self.currentQuestionIndex = 0
