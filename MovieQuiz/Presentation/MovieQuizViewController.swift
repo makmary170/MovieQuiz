@@ -127,7 +127,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     private func configureDependencies() {
 
-        let moviesLoader = MoviesLoader()
+        let networkClient = NetworkClient()
+        let moviesLoader = MoviesLoader(networkClient: networkClient)
         let questionFactory = QuestionFactory(delegate: self, moviesLoader: moviesLoader)
         self.questionFactory = questionFactory
 
