@@ -19,7 +19,6 @@ struct StubNetworkClient: NetworkRouting {
         if emulateError {
             handler(.failure(TestError.test))
         } else {
-            print(expectedResponse)
             handler(.success(expectedResponse))
         }
     }
