@@ -4,8 +4,6 @@ import UIKit
 
 private enum Constants {
     static let imageViewBorderWidth: CGFloat = 8
-    static let questionsAmount = 10
-    static let answerDisplayDuration: TimeInterval = 1
 
     static let yourResultText = "Ваш результат: "
     static let roundOverText = "Этот раунд окончен!"
@@ -29,10 +27,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     // MARK: - Properties
 
-    private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
+    private let presenter = MovieQuizPresenter()
     private var statisticService: StatisticServiceProtocol?
     private var currentQuestion: QuizQuestion?
 
@@ -69,7 +67,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
         currentQuestion = question
         
-        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self]  in
             self?.show(quiz: viewModel)
         }
@@ -116,7 +114,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
-            self.currentQuestionIndex = 0
+            presenter.resetQuestionIndex()
             self.correctAnswers = 0
 
             self.questionFactory?.loadData()
@@ -138,21 +136,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
         statisticService = StatisticService()
     }
-
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(Constants.questionsAmount)"
-        )
-        return questionStep
-    }
     
     private func show(quiz step: QuizStepViewModel) {
         imageView.layer.borderWidth = 0
-        imageView.layer.borderColor = nil
+        imageView.layer.borderColor = UIColor.clear.cgColor
         textLabel.text = step.question
-        imageView.image = step.image
+        imageView.image = UIImage(data: step.image) ?? UIImage()
         counterLabel.text = step.questionNumber
     }
     
@@ -176,15 +165,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == Constants.questionsAmount - 1 {
+        if presenter.isLastQuestion() {
             guard let statisticService else { return }
-            statisticService.store(correct: correctAnswers, total: 10)
+            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
 
             let formattedDateString = statisticService.bestGame.date.dateTimeString
             let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
 
             let messages = [
-                "\(Constants.yourResultText) \(correctAnswers)/\(Constants.questionsAmount)",
+                "\(Constants.yourResultText) \(correctAnswers)/\(presenter.questionsAmount)",
                 "\(Constants.gamesCountText)\(statisticService.gamesCount)",
                 "\(Constants.bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
                 "\(Constants.totalAccuracyText)\(formattedTotalAccuracyString)"
@@ -192,13 +181,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
             let alertModel = AlertModel(title: Constants.roundOverText, message:  messages.joined(separator: "\n"), buttonText: Constants.playAgainText) { [weak self]  in
                 guard let self else { return }
-                self.currentQuestionIndex = 0
+                presenter.resetQuestionIndex()
                 self.correctAnswers = 0
                 self.questionFactory?.requestNextQuestion()
             }
             self.alertPresenter?.showAlert(model: alertModel)
         } else {
-            currentQuestionIndex += 1
+            presenter.switchToNextQuestion()
             self.questionFactory?.requestNextQuestion()
             noButton.isEnabled = true
             yesButton.isEnabled = true
