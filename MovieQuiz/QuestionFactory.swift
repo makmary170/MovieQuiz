@@ -48,7 +48,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                 self.delegate?.didFailToLoadImage(with: error)
             }
 
-            let randomInt = Int.random(in: (7...9))
+            let randomInt = Int.random(in: (5...9))
             let text = "Рейтинг этого фильма больше чем \(randomInt)?"
             let correctAnswer = movie.rating > Float(randomInt)
 
