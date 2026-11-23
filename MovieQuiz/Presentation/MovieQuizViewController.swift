@@ -32,18 +32,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenter: AlertPresenterProtocol?
     private let presenter = MovieQuizPresenter()
     private var statisticService: StatisticServiceProtocol?
-    private var currentQuestion: QuizQuestion?
+//    private var currentQuestion: QuizQuestion?
 
     // MARK: - IBActions
 
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         yesButton.isEnabled = false
-        showResultByAnswer(isCorrectAnswer: true)
+
+//        presenter.currentQuestion = currentQuestion
+        presenter.showResultByAnswer(isCorrectAnswer: true)
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
-        showResultByAnswer(isCorrectAnswer: false)
+
+//        presenter.currentQuestion = currentQuestion
+        presenter.showResultByAnswer(isCorrectAnswer: false)
     }
 
     // MARK: - Lifecycle
@@ -65,8 +69,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
 
-        currentQuestion = question
-        
+        presenter.currentQuestion = question
+
         let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self]  in
             self?.show(quiz: viewModel)
@@ -135,6 +139,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         self.alertPresenter = alertPresenter
 
         statisticService = StatisticService()
+
+        presenter.viewController = self
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -145,7 +151,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.text = step.questionNumber
     }
     
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         imageView.layer.borderWidth = Constants.imageViewBorderWidth
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
@@ -157,11 +163,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self else { return }
             self.showNextQuestionOrResults()
         }
-    }
-    
-    private func showResultByAnswer(isCorrectAnswer: Bool) {
-        guard let currentQuestion else { return }
-        showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
     private func showNextQuestionOrResults() {
