@@ -12,7 +12,7 @@ private enum Constants {
     static let tryAgainText = "Попробовать еще раз"
 }
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController {
     
     // MARK: - IBOutlets
 
@@ -25,9 +25,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     // MARK: - Properties
 
-    private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
-    private let presenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter!
     private var statisticService: StatisticServiceProtocol?
 
     // MARK: - IBActions
@@ -52,32 +51,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showLoadingIndicator()
 
         configureDependencies()
-        questionFactory?.loadData()
     }
 
-    // MARK: - QuestionFactoryDelegate
-
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        self.hideLoadingIndicator()
-        presenter.didReceiveNextQuestion(question: question)
-    }
-
-    func didLoadDataFromServer() {
-        activityIndicator.isHidden = false
-        questionFactory?.requestNextQuestion()
-    }
-
-    func didFailToLoadData(with error: Error) {
-        showNetworkError(message: error.localizedDescription)
-    }
-
-    func didFailToLoadImage(with error: Error) {
-        showImageError(message: error.localizedDescription)
-    }
 
     // MARK: - Private methods
 
-    private func showLoadingIndicator() {
+    func showLoadingIndicator() {
         activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
@@ -86,26 +65,25 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         activityIndicator.isHidden = true
     }
 
-    private func showImageError(message: String) {
+    func showImageError(message: String) {
 
         let alertModel = AlertModel(title: "Ошибка загрузки изображения", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
-            self.questionFactory?.requestNextQuestion()
+            self.presenter.restartGame()
         }
 
         self.alertPresenter?.showAlert(model: alertModel)
     }
 
-    private func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         hideLoadingIndicator()
 
         let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
-            presenter.restartGame()
+            self.presenter.restartGame()
 
-            self.questionFactory?.loadData()
         }
 
         self.alertPresenter?.showAlert(model: alertModel)
@@ -113,18 +91,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     private func configureDependencies() {
 
-        let networkClient = NetworkClient()
-        let moviesLoader = MoviesLoader(networkClient: networkClient)
-        let questionFactory = QuestionFactory(delegate: self, moviesLoader: moviesLoader)
-        self.questionFactory = questionFactory
-
         let alertPresenter = ResultAlertPresenter()
         alertPresenter.delegate = self
         self.alertPresenter = alertPresenter
 
         statisticService = StatisticService()
 
-        presenter.viewController = self
+        presenter = MovieQuizPresenter(viewController: self)
     }
     
     func show(quiz step: QuizStepViewModel) {
@@ -141,7 +114,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self else { return }
-            self.presenter.questionFactory = self.questionFactory
             self.presenter.showNextQuestionOrResults()
             noButton.isEnabled = true
             yesButton.isEnabled = true
@@ -165,7 +137,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let alertModel = AlertModel(title: result.title, message:  messages.joined(separator: "\n"), buttonText: result.buttonText) { [weak self]  in
                 guard let self else { return }
                 self.presenter.restartGame()
-                self.questionFactory?.requestNextQuestion()
             }
             self.alertPresenter?.showAlert(model: alertModel)
     }
