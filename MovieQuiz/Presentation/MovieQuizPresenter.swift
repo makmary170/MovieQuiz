@@ -7,15 +7,28 @@
 
 import Foundation
 
+// MARK: - Constants
+
+private enum Constants {
+
+    static let yourResultText = "Ваш результат: "
+    static let gamesCountText = "Количество сыгранных квизов: "
+    static let bestGameText = "Рекорд: "
+    static let totalAccuracyText = "Средняя точность: "
+    static let tryAgainText = "Попробовать еще раз"
+}
+
 final class MovieQuizPresenter: QuestionFactoryDelegate {
 
     private var questionFactory: QuestionFactoryProtocol?
     weak var viewController: MovieQuizViewController?
+    private let statisticService: StatisticServiceProtocol!
 
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
 
         let networkClient = NetworkClient()
+        statisticService = StatisticService()
         let moviesLoader = MoviesLoader(networkClient: networkClient)
         questionFactory = QuestionFactory(delegate: self, moviesLoader: moviesLoader)
         questionFactory?.loadData()
@@ -95,5 +108,24 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
         }
+    }
+
+    func makeResultsMessage() -> String {
+        guard let statisticService else { return "" }
+        statisticService.store(correct: correctAnswers, total: questionsAmount)
+
+        let formattedDateString = statisticService.bestGame.date.dateTimeString
+        let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
+
+        let messages = [
+            "\(Constants.yourResultText) \(correctAnswers)/\(questionsAmount)",
+            "\(Constants.gamesCountText)\(statisticService.gamesCount)",
+            "\(Constants.bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
+            "\(Constants.totalAccuracyText)\(formattedTotalAccuracyString)"
+        ]
+
+        let resultMsg = messages.joined(separator: "\n")
+
+        return resultMsg
     }
 }

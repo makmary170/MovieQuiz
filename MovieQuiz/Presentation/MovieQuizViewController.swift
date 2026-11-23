@@ -4,11 +4,6 @@ import UIKit
 
 private enum Constants {
     static let imageViewBorderWidth: CGFloat = 8
-
-    static let yourResultText = "Ваш результат: "
-    static let gamesCountText = "Количество сыгранных квизов: "
-    static let bestGameText = "Рекорд: "
-    static let totalAccuracyText = "Средняя точность: "
     static let tryAgainText = "Попробовать еще раз"
 }
 
@@ -27,7 +22,6 @@ final class MovieQuizViewController: UIViewController {
 
     private var alertPresenter: AlertPresenterProtocol?
     private var presenter: MovieQuizPresenter!
-    private var statisticService: StatisticServiceProtocol?
 
     // MARK: - IBActions
 
@@ -95,8 +89,6 @@ final class MovieQuizViewController: UIViewController {
         alertPresenter.delegate = self
         self.alertPresenter = alertPresenter
 
-        statisticService = StatisticService()
-
         presenter = MovieQuizPresenter(viewController: self)
     }
     
@@ -121,20 +113,8 @@ final class MovieQuizViewController: UIViewController {
     }
 
     func showResult(quiz result: QuizResultsViewModel) {
-        guard let statisticService else { return }
-        statisticService.store(correct: presenter.correctAnswers, total: presenter.questionsAmount)
-
-        let formattedDateString = statisticService.bestGame.date.dateTimeString
-        let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
-
-        let messages = [
-            "\(Constants.yourResultText) \(presenter.correctAnswers)/\(presenter.questionsAmount)",
-            "\(Constants.gamesCountText)\(statisticService.gamesCount)",
-            "\(Constants.bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
-            "\(Constants.totalAccuracyText)\(formattedTotalAccuracyString)"
-        ]
-
-        let alertModel = AlertModel(title: result.title, message:  messages.joined(separator: "\n"), buttonText: result.buttonText) { [weak self]  in
+        
+        let alertModel = AlertModel(title: result.title, message:  presenter.makeResultsMessage(), buttonText: result.buttonText) { [weak self]  in
                 guard let self else { return }
                 self.presenter.restartGame()
             }
