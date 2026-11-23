@@ -25,7 +25,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     // MARK: - Properties
 
-    private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
     private let presenter = MovieQuizPresenter()
@@ -104,8 +103,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
-            presenter.resetQuestionIndex()
-            self.correctAnswers = 0
+            presenter.restartGame()
 
             self.questionFactory?.loadData()
         }
@@ -141,13 +139,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.borderWidth = Constants.imageViewBorderWidth
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
-        if isCorrect {
-            correctAnswers += 1
-        }
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self else { return }
-            self.presenter.correctAnswers = self.correctAnswers
             self.presenter.questionFactory = self.questionFactory
             self.presenter.showNextQuestionOrResults()
             noButton.isEnabled = true
@@ -157,13 +150,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     func showResult(quiz result: QuizResultsViewModel) {
         guard let statisticService else { return }
-        statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
+        statisticService.store(correct: presenter.correctAnswers, total: presenter.questionsAmount)
 
         let formattedDateString = statisticService.bestGame.date.dateTimeString
         let formattedTotalAccuracyString = "\(String(format: "%.2f", statisticService.totalAccuracy))%"
 
         let messages = [
-            "\(Constants.yourResultText) \(correctAnswers)/\(presenter.questionsAmount)",
+            "\(Constants.yourResultText) \(presenter.correctAnswers)/\(presenter.questionsAmount)",
             "\(Constants.gamesCountText)\(statisticService.gamesCount)",
             "\(Constants.bestGameText)\(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(formattedDateString))",
             "\(Constants.totalAccuracyText)\(formattedTotalAccuracyString)"
@@ -171,8 +164,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
         let alertModel = AlertModel(title: result.title, message:  messages.joined(separator: "\n"), buttonText: result.buttonText) { [weak self]  in
                 guard let self else { return }
-                presenter.resetQuestionIndex()
-                self.correctAnswers = 0
+                self.presenter.restartGame()
                 self.questionFactory?.requestNextQuestion()
             }
             self.alertPresenter?.showAlert(model: alertModel)
