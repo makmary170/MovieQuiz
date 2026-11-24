@@ -24,6 +24,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     weak var viewController: MovieQuizViewController?
     private let statisticService: StatisticServiceProtocol!
 
+    private var currentQuestionIndex = 0
+    private var correctAnswers = 0
+    private let questionsAmount = 10
+    private var currentQuestion: QuizQuestion?
+
+
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
 
@@ -37,43 +43,32 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
     // MARK: - QuestionFactoryDelegate
 
-        func didReceiveNextQuestion(question: QuizQuestion?) {
-            guard let question else { return }
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question else { return }
 
-            currentQuestion = question
-            let viewModel = convert(model: question)
-            DispatchQueue.main.async { [weak self] in
-                self?.viewController?.show(quiz: viewModel)
-                self?.viewController?.hideLoadingIndicator()
-            }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: viewModel)
+            self?.viewController?.hideLoadingIndicator()
         }
+    }
 
-        func didLoadDataFromServer() {
-            viewController?.hideLoadingIndicator()
-            questionFactory?.requestNextQuestion()
-        }
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
 
-        func didFailToLoadData(with error: Error) {
-            viewController?.showNetworkError(message: error.localizedDescription)
-        }
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
 
-        func didFailToLoadImage(with error: Error) {
-            viewController?.showImageError(message: error.localizedDescription)
-        }
-
-    private var currentQuestionIndex = 0
-    private var correctAnswers = 0
-    private let questionsAmount = 10
-    private var currentQuestion: QuizQuestion?
+    func didFailToLoadImage(with error: Error) {
+        viewController?.showImageError(message: error.localizedDescription)
+    }
 
     private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
-    }
-
-    func restartGame() {
-        currentQuestionIndex = 0
-        correctAnswers = 0
-        questionFactory?.requestNextQuestion()
     }
 
     private func switchToNextQuestion() {
@@ -98,12 +93,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
 
-    func didAnswer(isCorrectAnswer: Bool) {
-        guard let currentQuestion else { return }
-        correctAnswers += isCorrectAnswer ? 1 : 0
-        proceedWithAnswer(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
-        }
-
     private func proceedWithAnswer() {
         if self.isLastQuestion() {
             let text = "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
@@ -117,6 +106,18 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
         }
+    }
+
+    func restartGame() {
+        currentQuestionIndex = 0
+        correctAnswers = 0
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didAnswer(isCorrectAnswer: Bool) {
+        guard let currentQuestion else { return }
+        correctAnswers += isCorrectAnswer ? 1 : 0
+        proceedWithAnswer(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
     func makeResultsMessage() -> String {
