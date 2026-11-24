@@ -43,12 +43,18 @@ final class MovieQuizViewController: UIViewController {
         super.viewDidLoad()
 
         showLoadingIndicator()
-
         configureDependencies()
     }
 
-
     // MARK: - Private methods
+
+    private func configureDependencies() {
+        let alertPresenter = ResultAlertPresenter()
+        alertPresenter.delegate = self
+        self.alertPresenter = alertPresenter
+
+        presenter = MovieQuizPresenter(viewController: self)
+    }
 
     func showLoadingIndicator() {
         activityIndicator.isHidden = false
@@ -60,7 +66,6 @@ final class MovieQuizViewController: UIViewController {
     }
 
     func showImageError(message: String) {
-
         let alertModel = AlertModel(title: "Ошибка загрузки изображения", message: message, buttonText: Constants.tryAgainText) { [weak self]
             in
             guard let self else { return }
@@ -82,15 +87,6 @@ final class MovieQuizViewController: UIViewController {
 
         self.alertPresenter?.showAlert(model: alertModel)
     }
-
-    private func configureDependencies() {
-
-        let alertPresenter = ResultAlertPresenter()
-        alertPresenter.delegate = self
-        self.alertPresenter = alertPresenter
-
-        presenter = MovieQuizPresenter(viewController: self)
-    }
     
     func show(quiz step: QuizStepViewModel) {
         imageView.layer.borderWidth = 0
@@ -99,21 +95,15 @@ final class MovieQuizViewController: UIViewController {
         imageView.image = UIImage(data: step.image) ?? UIImage()
         counterLabel.text = step.questionNumber
     }
-    
-    func showAnswerResult(isCorrect: Bool) {
+
+    func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.borderWidth = Constants.imageViewBorderWidth
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self else { return }
-            self.presenter.showNextQuestionOrResults()
-            noButton.isEnabled = true
-            yesButton.isEnabled = true
-        }
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+        noButton.isEnabled = true
+        yesButton.isEnabled = true
     }
 
     func showResult(quiz result: QuizResultsViewModel) {
-        
         let alertModel = AlertModel(title: result.title, message:  presenter.makeResultsMessage(), buttonText: result.buttonText) { [weak self]  in
                 guard let self else { return }
                 self.presenter.restartGame()

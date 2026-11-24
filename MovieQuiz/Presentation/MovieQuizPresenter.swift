@@ -62,11 +62,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
 
     private var currentQuestionIndex = 0
-    var correctAnswers = 0
-    let questionsAmount = 10
-    var currentQuestion: QuizQuestion?
+    private var correctAnswers = 0
+    private let questionsAmount = 10
+    private var currentQuestion: QuizQuestion?
 
-    func isLastQuestion() -> Bool {
+    private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
 
@@ -76,11 +76,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory?.requestNextQuestion()
     }
 
-    func switchToNextQuestion() {
+    private func switchToNextQuestion() {
         currentQuestionIndex += 1
     }
 
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: model.image,
             question: model.text,
@@ -89,13 +89,22 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         return questionStep
     }
 
+    private func proceedWithAnswer(isCorrect: Bool) {
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            self.proceedWithAnswer()
+        }
+    }
+
     func didAnswer(isCorrectAnswer: Bool) {
         guard let currentQuestion else { return }
         correctAnswers += isCorrectAnswer ? 1 : 0
-        viewController?.showAnswerResult(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
+        proceedWithAnswer(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
         }
 
-    func showNextQuestionOrResults() {
+    private func proceedWithAnswer() {
         if self.isLastQuestion() {
             let text = "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
             let viewModel = QuizResultsViewModel(
