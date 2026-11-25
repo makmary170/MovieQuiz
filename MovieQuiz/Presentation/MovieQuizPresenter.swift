@@ -48,10 +48,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
         currentQuestion = question
         let viewModel = convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.viewController?.show(quiz: viewModel)
-            self?.viewController?.hideLoadingIndicator()
-        }
+        self.viewController?.show(quiz: viewModel)
+        self.viewController?.hideLoadingIndicator()
     }
 
     func didLoadDataFromServer() {
@@ -75,7 +73,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestionIndex += 1
     }
 
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: model.image,
             question: model.text,

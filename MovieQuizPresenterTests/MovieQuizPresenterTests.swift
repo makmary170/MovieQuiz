@@ -9,7 +9,10 @@ import XCTest
 @testable import MovieQuiz
 
 final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
+    var questionStepMock: QuizStepViewModel?
+
     func show(quiz step: MovieQuiz.QuizStepViewModel) {
+        questionStepMock = step
     }
 
     func showResult(quiz result: MovieQuiz.QuizResultsViewModel) {
@@ -35,19 +38,20 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
 final class MovieQuizPresenterTests: XCTestCase {
     func testPresenterConvertModel() throws {
         let mockViewController = MovieQuizViewControllerMock()
-        let presenter = MovieQuizPresenter(viewController: mockViewController)
+        let sut = MovieQuizPresenter(viewController: mockViewController)
 
+        let questionText = "Question text"
         let emptyData = Data()
         let question = QuizQuestion(
             image: emptyData,
-            text: "Question text",
+            text: questionText,
             correctAnswer: true
         )
 
-        let viewModel = presenter.convert(model: question)
+        sut.didReceiveNextQuestion(question: question)
 
-        XCTAssertEqual(viewModel.question, "Question text")
-        XCTAssertEqual(viewModel.image, emptyData)
-        XCTAssertEqual(viewModel.questionNumber, "1/10")
+        XCTAssertEqual(mockViewController.questionStepMock?.question, questionText)
+        XCTAssertEqual(mockViewController.questionStepMock?.image, emptyData)
+        XCTAssertEqual(mockViewController.questionStepMock?.questionNumber, "1/10")
     }
 }
