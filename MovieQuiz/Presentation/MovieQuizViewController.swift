@@ -26,13 +26,13 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // MARK: - IBActions
 
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        yesButton.isEnabled = false
+        enableButtons(false)
 
         presenter.didAnswer(isCorrectAnswer: true)
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        noButton.isEnabled = false
+        enableButtons(false)
 
         presenter.didAnswer(isCorrectAnswer: false)
     }
@@ -55,6 +55,12 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
 
         presenter = MovieQuizPresenter(viewController: self)
     }
+
+    private func enableButtons(_ isEnabled: Bool) {
+        for button in [yesButton, noButton] {
+            button?.isEnabled = isEnabled
+            }
+        }
 
     // MARK: - Internal methods
 
@@ -96,13 +102,13 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         textLabel.text = step.question
         imageView.image = UIImage(data: step.image) ?? UIImage()
         counterLabel.text = step.questionNumber
+
+        enableButtons(true)
     }
 
     func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.borderWidth = Constants.imageViewBorderWidth
         imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        noButton.isEnabled = true
-        yesButton.isEnabled = true
     }
 
     func showResult(quiz result: QuizResultsViewModel) {
