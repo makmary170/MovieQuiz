@@ -59,7 +59,7 @@ final class MovieQuizUITests: XCTestCase {
     }
 
     func testResultAlert() {
-        sleep(1)
+        sleep(3)
 
         var qwNumber = app.staticTexts["Index"].label.split(separator: "/")[0]
         while Int(qwNumber) ?? 10 < 10 {
@@ -72,15 +72,15 @@ final class MovieQuizUITests: XCTestCase {
         let lastQwNumber = app.staticTexts["Index"].label // наш путь до алерта окончен
         XCTAssertEqual(lastQwNumber, "10/10")
 
-        sleep(1)
+        sleep(3)
         app.buttons["No"].tap() // ответим на последний вопрос, что бы появился алерт
 
-        sleep(1)
+        sleep(3)
         let alert = app.alerts["alert"]
 
         XCTAssertTrue(alert.exists)
         XCTAssertTrue(alert.label == "Этот раунд окончен!")
-        XCTAssertEqual(alert.buttons.firstMatch.label, "Сыграть еще раз")
+        XCTAssertEqual(alert.buttons.firstMatch.label, "Сыграть ещё раз")
     }
 
     func testAlertDismiss() {

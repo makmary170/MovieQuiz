@@ -7,7 +7,7 @@ private enum Constants {
     static let tryAgainText = "Попробовать еще раз"
 }
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
     // MARK: - IBOutlets
 
