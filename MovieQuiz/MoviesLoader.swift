@@ -37,6 +37,8 @@ struct MoviesLoader: MoviesLoading {
         case apiError(String)
     }
 
+    // MARK: - Internal Methods
+
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void ) {
         networkClient.fetch(url: mostPopularMoviesUrl, handler: { result in
             switch result {

@@ -23,7 +23,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // MARK: - Properties
 
     private var questionFactory: QuestionFactoryProtocol?
-    weak var viewController: MovieQuizViewControllerProtocol?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     private let statisticService: StatisticServiceProtocol!
 
     private var currentQuestionIndex = 0
@@ -54,51 +54,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         self.viewController?.hideLoadingIndicator()
     }
 
-    // MARK: - Private methods
-
-    private func isLastQuestion() -> Bool {
-        currentQuestionIndex == questionsAmount - 1
-    }
-
-    private func switchToNextQuestion() {
-        currentQuestionIndex += 1
-    }
-
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: model.image,
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
-        )
-        return questionStep
-    }
-
-    private func proceedWithAnswer(isCorrect: Bool) {
-        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self else { return }
-            self.proceedWithAnswer()
-        }
-    }
-
-    private func proceedWithAnswer() {
-        if self.isLastQuestion() {
-            let text = "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-            let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз"
-            )
-            viewController?.showResult(quiz: viewModel)
-        } else {
-            self.switchToNextQuestion()
-            questionFactory?.requestNextQuestion()
-        }
-    }
-
-    // MARK: - Internal methods
-
     func didLoadDataFromServer() {
         viewController?.hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
@@ -112,6 +67,50 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController?.showImageError(message: error.localizedDescription)
     }
 
+    // MARK: - Private methods
+
+    private func isLastQuestion() -> Bool {
+        currentQuestionIndex == questionsAmount - 1
+    }
+
+    private func switchToNextQuestion() {
+        currentQuestionIndex += 1
+    }
+
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+        return QuizStepViewModel(
+            image: model.image,
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
+        )
+    }
+
+    private func proceedWithAnswer(isCorrect: Bool) {
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            self.proceedToNextQuestionOrResults()
+        }
+    }
+
+    private func proceedToNextQuestionOrResults() {
+        if self.isLastQuestion() {
+            guard let resultMsg = makeResultsMessage() else { return }
+            let viewModel = QuizResultsViewModel(
+                title: "Этот раунд окончен!",
+                text: resultMsg,
+                buttonText: "Сыграть ещё раз"
+            )
+            viewController?.showResult(quiz: viewModel)
+        } else {
+            self.switchToNextQuestion()
+            questionFactory?.requestNextQuestion()
+        }
+    }
+
+    // MARK: - Internal methods
+
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
@@ -124,8 +123,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         proceedWithAnswer(isCorrect: isCorrectAnswer == currentQuestion.correctAnswer)
     }
 
-    func makeResultsMessage() -> String {
-        guard let statisticService else { return "" }
+    func makeResultsMessage() -> String? {
+
+        guard let statisticService else { return nil }
         statisticService.store(correct: correctAnswers, total: questionsAmount)
 
         let formattedDateString = statisticService.bestGame.date.dateTimeString

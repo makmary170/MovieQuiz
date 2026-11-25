@@ -42,7 +42,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        showLoadingIndicator()
         configureDependencies()
     }
 
@@ -112,7 +111,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     }
 
     func showResult(quiz result: QuizResultsViewModel) {
-        let alertModel = AlertModel(title: result.title, message:  presenter.makeResultsMessage(), buttonText: result.buttonText) { [weak self]  in
+        let alertModel = AlertModel(title: result.title, message:  result.text, buttonText: result.buttonText) { [weak self]  in
                 guard let self else { return }
                 self.presenter.restartGame()
             }
