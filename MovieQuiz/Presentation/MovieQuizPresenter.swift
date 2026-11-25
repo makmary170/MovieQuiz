@@ -20,6 +20,8 @@ private enum Constants {
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
 
+    // MARK: - Properties
+
     private var questionFactory: QuestionFactoryProtocol?
     weak var viewController: MovieQuizViewControllerProtocol?
     private let statisticService: StatisticServiceProtocol!
@@ -52,18 +54,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         self.viewController?.hideLoadingIndicator()
     }
 
-    func didLoadDataFromServer() {
-        viewController?.hideLoadingIndicator()
-        questionFactory?.requestNextQuestion()
-    }
-
-    func didFailToLoadData(with error: Error) {
-        viewController?.showNetworkError(message: error.localizedDescription)
-    }
-
-    func didFailToLoadImage(with error: Error) {
-        viewController?.showImageError(message: error.localizedDescription)
-    }
+    // MARK: - Private methods
 
     private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
@@ -104,6 +95,21 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
         }
+    }
+
+    // MARK: - Internal methods
+
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
+
+    func didFailToLoadImage(with error: Error) {
+        viewController?.showImageError(message: error.localizedDescription)
     }
 
     func restartGame() {
