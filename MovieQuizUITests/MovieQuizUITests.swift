@@ -29,79 +29,80 @@ final class MovieQuizUITests: XCTestCase {
     }
 
     func testYesButton() {
-        sleep(3)
 
         let firstPoster = app.images["Poster"]
+        XCTAssertTrue(firstPoster.waitForExistence(timeout: 3))
         let firstPosterData = firstPoster.screenshot().pngRepresentation
 
         app.buttons["Yes"].tap()
-        sleep(3)
 
         let secondPoster = app.images["Poster"]
+        XCTAssertTrue(secondPoster.waitForExistence(timeout: 3))
         let secondPosterData = secondPoster.screenshot().pngRepresentation
         XCTAssertFalse(firstPosterData == secondPosterData)
     }
 
     func testNoButton() {
-        sleep(3)
 
         let firstPoster = app.images["Poster"]
+        XCTAssertTrue(firstPoster.waitForExistence(timeout: 3))
         let firstPosterData = firstPoster.screenshot().pngRepresentation
 
         app.buttons["No"].tap()
-        sleep(3)
 
         let indexLabel = app.staticTexts["Index"]
+        XCTAssertTrue(indexLabel.waitForExistence(timeout: 3))
+
         let secondPoster = app.images["Poster"]
+        XCTAssertTrue(secondPoster.waitForExistence(timeout: 3))
         let secondPosterData = secondPoster.screenshot().pngRepresentation
+
         XCTAssertFalse(firstPosterData == secondPosterData)
-        XCTAssertEqual(indexLabel.label, "2/10")
+        XCTAssertTrue(indexLabel.wait(for: \.label, toEqual: "2/10", timeout: 3))
     }
 
     func testResultAlert() {
-        sleep(3)
+        let button = app.buttons["No"]
 
-        var qwNumber = app.staticTexts["Index"].label.split(separator: "/")[0]
-        while Int(qwNumber) ?? 10 < 10 {
-            app.buttons["No"].tap()
-            sleep(1)
+        for _ in 1...10 {
 
-            qwNumber = app.staticTexts["Index"].label.split(separator: "/")[0]
+            XCTAssertTrue(button.waitForExistence(timeout: 3))
+
+            button.tap()
         }
 
-        let lastQwNumber = app.staticTexts["Index"].label // наш путь до алерта окончен
-        XCTAssertEqual(lastQwNumber, "10/10")
+        let lastQwNumber = app.staticTexts["Index"]  // наш путь до алерта окончен
+        XCTAssertTrue(lastQwNumber.waitForExistence(timeout: 3))
+        XCTAssertTrue(lastQwNumber.wait(for: \.label, toEqual: "10/10", timeout: 3))
 
-        sleep(3)
-        app.buttons["No"].tap() // ответим на последний вопрос, что бы появился алерт
-
-        sleep(3)
         let alert = app.alerts["alert"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 3))
 
-        XCTAssertTrue(alert.exists)
-        XCTAssertTrue(alert.label == "Этот раунд окончен!")
-        XCTAssertEqual(alert.buttons.firstMatch.label, "Сыграть ещё раз")
+        XCTAssertTrue(alert.wait(for: \.label, toEqual: "Этот раунд окончен!", timeout: 3))
+        XCTAssertTrue(alert.wait(for: \.buttons.firstMatch.label, toEqual: "Сыграть ещё раз", timeout: 3))
     }
 
     func testAlertDismiss() {
-        sleep(2)
+        let button = app.buttons["No"]
+
         for _ in 1...10 {
-            app.buttons["No"].tap()
-            sleep(1)
+            XCTAssertTrue(button.waitForExistence(timeout: 3))
+
+            button.tap()
         }
 
-
-        let lastQwNumber = app.staticTexts["Index"].label // наш путь до алерта окончен
-        XCTAssertEqual(lastQwNumber, "10/10")
+        let lastQwNumber = app.staticTexts["Index"]  // наш путь до алерта окончен
+        XCTAssertTrue(lastQwNumber.wait(for: \.label, toEqual: "10/10", timeout: 3)) // последний вопрос
 
         let alert = app.alerts["alert"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 3))
+
         alert.buttons.firstMatch.tap() // сыграть еще раз
 
-        sleep(1)
-
         let indexLabel = app.staticTexts["Index"]
+        XCTAssertTrue(indexLabel.waitForExistence(timeout: 3))
 
-        XCTAssertFalse(alert.exists)
-        XCTAssertTrue(indexLabel.label == "1/10") // начинаем сначала
+        XCTAssertFalse(alert.waitForExistence(timeout: 3)) // алерта нет
+        XCTAssertTrue(indexLabel.wait(for: \.label, toEqual: "1/10", timeout: 3)) // 1ый вопрос
     }
 }
