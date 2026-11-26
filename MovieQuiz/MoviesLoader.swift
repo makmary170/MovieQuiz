@@ -17,7 +17,10 @@ struct MoviesLoader: MoviesLoading {
 
     // MARK: - NetworkClient
 
-    private let networkClient = NetworkClient()
+    private let networkClient: NetworkClientProtocol
+    init(networkClient: NetworkClientProtocol = NetworkClient()) {
+        self.networkClient = networkClient
+    }
 
     // MARK: - URL
 
@@ -33,6 +36,8 @@ struct MoviesLoader: MoviesLoading {
     private enum MessageError: Error {
         case apiError(String)
     }
+
+    // MARK: - Internal Methods
 
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void ) {
         networkClient.fetch(url: mostPopularMoviesUrl, handler: { result in
