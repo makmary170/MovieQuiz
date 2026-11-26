@@ -11,6 +11,7 @@ import UIKit
 final class ResultAlertPresenter: AlertPresenterProtocol {
 
     weak var delegate: UIViewController?
+
     func showAlert(model: AlertModel) {
         DispatchQueue.main.async { [self] in
             let alert = UIAlertController(
@@ -22,6 +23,7 @@ final class ResultAlertPresenter: AlertPresenterProtocol {
             let action = UIAlertAction(title: model.buttonText, style: .default) { _ in
                 model.completion()
             }
+
             alert.addAction(action)
             delegate?.present(alert, animated: true, completion: nil)
         }

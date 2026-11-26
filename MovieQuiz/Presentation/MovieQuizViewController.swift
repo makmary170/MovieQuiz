@@ -7,8 +7,8 @@ private enum Constants {
     static let tryAgainText = "Попробовать еще раз"
 }
 
-final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
-    
+final class MovieQuizViewController: UIViewController {
+
     // MARK: - IBOutlets
 
     @IBOutlet private weak var textLabel: UILabel!
@@ -21,20 +21,20 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // MARK: - Properties
 
     private var alertPresenter: AlertPresenterProtocol?
-    private var presenter: MovieQuizPresenter!
+    private var presenter: MovieQuizPresenter?
 
     // MARK: - IBActions
 
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         enableButtons(false)
 
-        presenter.didAnswer(isCorrectAnswer: true)
+        presenter?.didAnswer(isCorrectAnswer: true)
     }
-    
+
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         enableButtons(false)
 
-        presenter.didAnswer(isCorrectAnswer: false)
+        presenter?.didAnswer(isCorrectAnswer: false)
     }
 
     // MARK: - Lifecycle
@@ -58,51 +58,35 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     private func enableButtons(_ isEnabled: Bool) {
         for button in [yesButton, noButton] {
             button?.isEnabled = isEnabled
-            }
         }
+    }
+
+    private func showError(title: String, message: String) {
+        hideLoadingIndicator()
+
+        let alertModel = AlertModel(title: title, message: message, buttonText: Constants.tryAgainText) { [weak self]
+            in
+            guard let self else { return }
+            self.presenter?.restartGame()
+        }
+
+        self.alertPresenter?.showAlert(model: alertModel)
+    }
 
     // MARK: - Internal methods
 
-    func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-
-    func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-    }
-
     func showImageError(message: String) {
-        let alertModel = AlertModel(title: "Ошибка загрузки изображения", message: message, buttonText: Constants.tryAgainText) { [weak self]
-            in
-            guard let self else { return }
-            self.presenter.restartGame()
-        }
-
-        self.alertPresenter?.showAlert(model: alertModel)
+        showError(
+            title: "Ошибка загрузки изображения",
+            message: message
+        )
     }
 
     func showNetworkError(message: String) {
-        hideLoadingIndicator()
-
-        let alertModel = AlertModel(title: "Ошибка", message: message, buttonText: Constants.tryAgainText) { [weak self]
-            in
-            guard let self else { return }
-            self.presenter.restartGame()
-
-        }
-
-        self.alertPresenter?.showAlert(model: alertModel)
-    }
-    
-    func show(quiz step: QuizStepViewModel) {
-        imageView.layer.borderWidth = 0
-        imageView.layer.borderColor = UIColor.clear.cgColor
-        textLabel.text = step.question
-        imageView.image = UIImage(data: step.image) ?? UIImage()
-        counterLabel.text = step.questionNumber
-
-        enableButtons(true)
+        showError(
+            title: "Ошибка",
+            message: message
+        )
     }
 
     func highlightImageBorder(isCorrectAnswer: Bool) {
@@ -112,9 +96,33 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
 
     func showResult(quiz result: QuizResultsViewModel) {
         let alertModel = AlertModel(title: result.title, message:  result.text, buttonText: result.buttonText) { [weak self]  in
-                guard let self else { return }
-                self.presenter.restartGame()
-            }
-            self.alertPresenter?.showAlert(model: alertModel)
+            guard let self else { return }
+            self.presenter?.restartGame()
+        }
+        self.alertPresenter?.showAlert(model: alertModel)
     }
 }
+
+// MARK: - MovieQuizViewControllerProtocol
+
+extension MovieQuizViewController: MovieQuizViewControllerProtocol {
+
+    func showLoadingIndicator() {
+        activityIndicator.startAnimating()
+    }
+
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+    }
+
+    func show(quiz step: QuizStepViewModel) {
+        imageView.layer.borderWidth = 0
+        imageView.layer.borderColor = UIColor.clear.cgColor
+        textLabel.text = step.question
+        imageView.image = UIImage(data: step.image) ?? UIImage()
+        counterLabel.text = step.questionNumber
+
+        enableButtons(true)
+    }
+}
+

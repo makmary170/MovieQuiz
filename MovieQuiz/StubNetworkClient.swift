@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct StubNetworkClient: NetworkRouting {
+struct StubNetworkClient: NetworkClientProtocol {
 
     enum TestError: Error {
     case test

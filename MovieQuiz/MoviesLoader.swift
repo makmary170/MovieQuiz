@@ -17,8 +17,8 @@ struct MoviesLoader: MoviesLoading {
 
     // MARK: - NetworkClient
 
-    private let networkClient: NetworkRouting
-    init(networkClient: NetworkRouting = NetworkClient()) {
+    private let networkClient: NetworkClientProtocol
+    init(networkClient: NetworkClientProtocol = NetworkClient()) {
         self.networkClient = networkClient
     }
 
