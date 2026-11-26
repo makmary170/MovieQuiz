@@ -10,11 +10,10 @@ import XCTest
 
 final class MoviesLoaderTests: XCTestCase {
 
-    func testSuccessLoading() throws {
+    func testLoadMoviesReturnsMoviesOnSuccess() {
         // Given
         let stubNetworkClient = StubNetworkClient(emulateError: false)
         let loader = MoviesLoader(networkClient: stubNetworkClient)
-        print(loader)
 
         // When
         let expectation = expectation(description: "Loading expectation")
@@ -36,16 +35,16 @@ final class MoviesLoaderTests: XCTestCase {
     }
 
 
-    func testFailureLoading() throws {
+    func testLoadMoviesReturnsErrorOnFailure() throws {
 
         // Given
         let stubNetworkClient = StubNetworkClient(emulateError: true)
-        let loader = MoviesLoader(networkClient: stubNetworkClient)
+        let sut = MoviesLoader(networkClient: stubNetworkClient)
 
         // When
         let expectation = expectation(description: "Loading expectation")
 
-        loader.loadMovies { result in
+        sut.loadMovies { result in
             // Then
             switch result {
             case .success(_):

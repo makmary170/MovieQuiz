@@ -8,50 +8,33 @@
 import XCTest
 @testable import MovieQuiz
 
-final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
-    var questionStepMock: QuizStepViewModel?
-
-    func show(quiz step: MovieQuiz.QuizStepViewModel) {
-        questionStepMock = step
-    }
-
-    func showResult(quiz result: MovieQuiz.QuizResultsViewModel) {
-    }
-
-    func highlightImageBorder(isCorrectAnswer: Bool) {
-    }
-
-    func showLoadingIndicator() {
-    }
-
-    func hideLoadingIndicator() {
-    }
-
-    func showNetworkError(message: String) {
-    }
-
-    func showImageError(message: String) {
-
-    }
-}
-
 final class MovieQuizPresenterTests: XCTestCase {
-    func testPresenterConvertModel() throws {
+
+    // MARK: - Tests
+
+    func testDidReceiveNextQuestionShowsQuizStep() throws {
+        // Given
         let mockViewController = MovieQuizViewControllerMock()
         let sut = MovieQuizPresenter(viewController: mockViewController)
 
         let questionText = "Question text"
-        let emptyData = Data()
+        let emptyData = Data([0x01, 0x02, 0x03])
         let question = QuizQuestion(
             image: emptyData,
             text: questionText,
             correctAnswer: true
         )
 
+        // When
         sut.didReceiveNextQuestion(question: question)
 
-        XCTAssertEqual(mockViewController.questionStepMock?.question, questionText)
-        XCTAssertEqual(mockViewController.questionStepMock?.image, emptyData)
-        XCTAssertEqual(mockViewController.questionStepMock?.questionNumber, "1/10")
+        // Then
+        let viewModel = try XCTUnwrap(
+            mockViewController.questionStepMock
+        )
+
+        XCTAssertEqual(viewModel.question, questionText)
+        XCTAssertEqual(viewModel.image, emptyData)
+        XCTAssertEqual(viewModel.questionNumber, "1/10")
     }
 }
