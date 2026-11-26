@@ -35,7 +35,7 @@ final class MoviesLoaderTests: XCTestCase {
     }
 
 
-    func testLoadMoviesReturnsErrorOnFailure() throws {
+    func testLoadMoviesReturnsErrorOnFailure() {
 
         // Given
         let stubNetworkClient = StubNetworkClient(emulateError: true)
